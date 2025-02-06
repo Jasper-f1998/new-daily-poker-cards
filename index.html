@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>每日20:30随机扑克牌</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #2c3e50;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        .cards {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .card {
+            width: 120px;
+            height: 180px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-size: 24px;
+        }
+        .red { color: #e74c3c; }
+        .black { color: #2c3e50; }
+        .small { font-size: 14px; color: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="color: white;">今日三张随机牌</h2>
+        <div class="cards" id="cards"></div>
+        <div class="small">每天20:30更新 | 刷新页面获取最新结果</div>
+    </div>
+
+<script>
+function generateCards() {
+    // 扑克牌数据
+    const suits = [
+        { symbol: '♥', color: 'red' },
+        { symbol: '♦', color: 'red' },
+        { symbol: '♠', color: 'black' },
+        { symbol: '♣', color: 'black' }
+    ];
+    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+    // 生成当日唯一种子（基于北京时间）
+    const now = new Date();
+    const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)); // 转北京时间
+    const seedDate = beijingTime.getUTCHours() >= 12 ? 
+        beijingTime.toISOString().slice(0,10) : 
+        new Date(beijingTime - 24*60*60*1000).toISOString().slice(0,10);
+
+    // 可重复的随机算法
+    function seededRandom(seed) {
+        let x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    }
+
+    // 生成当日牌组
+    const deck = [];
+    suits.forEach(suit => {
+        ranks.forEach(rank => {
+            deck.push({
+                symbol: suit.symbol,
+                rank: rank,
+                color: suit.color
+            });
+        });
+    });
+
+    // 洗牌（基于种子）
+    const seed = seedDate.split('-').join('');
+    const shuffledDeck = [...deck].sort(() => seededRandom(seed) - 0.5);
+
+    // 取前三张
+    return shuffledDeck.slice(0, 3);
+}
+
+function displayCards() {
+    const container = document.getElementById('cards');
+    container.innerHTML = '';
+    
+    generateCards().forEach(card => {
+        const cardEl = document.createElement('div');
+        cardEl.className = `card ${card.color}`;
+        cardEl.innerHTML = `
+            <div style="margin-bottom: 20px;">${card.symbol}</div>
+            <div>${card.rank}</div>
+        `;
+        container.appendChild(cardEl);
+    });
+}
+
+// 初始化显示
+displayCards();
+</script>
+</body>
+</html>
